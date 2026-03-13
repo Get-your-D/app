@@ -10,13 +10,13 @@ import { Repository } from 'typeorm';
 import * as argon2 from 'argon2';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
-import { User } from '../../entities/user.entity';
-import { consentVersion } from '../../utils/consent.template';
-import { AuditService } from '../../common/services/audit.service';
-import { RegisterDto, LoginDto, UserRole, MfaResponseDto, RefreshTokenDto } from '../../common/dtos/auth.dto';
-import { ConsentVersion } from '../../entities/consent-version.entity';
-import { ConsentRecord, ConsentAction } from '../../entities/consent-record.entity';
-import { AuditAction } from '../../entities/audit-log.entity';
+import { User } from '../entities/user.entity';
+import { consentVersion } from '../utils/consent.template';
+import { AuditService } from '../common/services/audit.service';
+import { RegisterDto, LoginDto, UserRole, MfaResponseDto, RefreshTokenDto } from '../common/dtos/auth.dto';
+import { ConsentVersion } from '../entities/consent-version.entity';
+import { ConsentRecord, ConsentAction } from '../entities/consent-record.entity';
+import { AuditAction } from '../entities/audit-log.entity';
 
 @Injectable()
 export class AuthService {
