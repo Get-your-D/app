@@ -8,11 +8,6 @@ export function setupSwagger(app: INestApplication): void {
             'GDPR-compliant healthcare management system with patient records, appointments, and consent tracking',
         )
         .setVersion('1.0.0')
-        .addContact('Data Protection Officer', undefined, process.env.DPO_EMAIL || 'dpo@healthcare.com')
-        .addLicense(
-            'Proprietary',
-            'Licensed under EU GDPR and German medical data protection regulations',
-        )
         .addServer(process.env.API_URL || 'http://localhost:3001', 'Development Server')
         .addServer(process.env.PROD_API_URL || 'https://api.healthcare.com', 'Production Server')
         .addBearerAuth(

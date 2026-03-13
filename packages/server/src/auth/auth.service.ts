@@ -53,16 +53,18 @@ export class AuthService {
         });
 
         // Create user
-        const user = this.usersRepository.create({
+        const userObj = {
             email: dto.email,
             passwordHash,
             role: dto.role,
             firstName: dto.firstName,
             lastName: dto.lastName,
             phone: dto.phone,
-            dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : null,
+            dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : new Date(),
             gender: dto.gender,
-        });
+        };
+
+        const user = this.usersRepository.create(userObj) as User;
 
         try {
             const savedUser = await this.usersRepository.save(user);
@@ -280,7 +282,7 @@ export class AuthService {
     async logout(userId: string): Promise<void> {
         const user = await this.usersRepository.findOne({ where: { id: userId } });
         if (user) {
-            user.refreshTokenHash = null;
+            (user as any).refreshTokenHash = null;
             await this.usersRepository.save(user);
         }
 

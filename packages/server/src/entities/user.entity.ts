@@ -7,7 +7,7 @@ import {
     Index,
     OneToOne,
 } from 'typeorm';
-import { UserRole, Gender } from '../dtos/auth.dto';
+import { UserRole, Gender } from '../common/dtos/auth.dto';
 import { Patient } from './patient.entity';
 
 @Entity('users')

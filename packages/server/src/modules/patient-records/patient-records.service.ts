@@ -36,7 +36,7 @@ export class PatientRecordsService {
             userId: providerId,
             action: AuditAction.CREATE_PATIENT,
             resourceType: 'patient',
-            resourceId: savedPatient.id,
+            resourceId: (savedPatient as any).id,
             status: 'success',
         });
 
@@ -121,7 +121,7 @@ export class PatientRecordsService {
         }
 
         const records = await this.recordsRepository.find({
-            where: { patientId, deletedAt: null },
+            where: { patientId, deletedAt: undefined as any },
             order: { createdAt: 'DESC' },
         });
 

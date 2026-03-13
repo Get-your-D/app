@@ -19,12 +19,12 @@ export class EmailService {
     private readonly smtpPassword: string;
     private readonly smtpFrom: string;
 
-    constructor(private configService: ConfigService) {
-        this.smtpHost = this.configService.get('SMTP_HOST', 'localhost');
-        this.smtpPort = this.configService.get('SMTP_PORT', 587);
-        this.smtpUser = this.configService.get('SMTP_USER', '');
-        this.smtpPassword = this.configService.get('SMTP_PASSWORD', '');
-        this.smtpFrom = this.configService.get('SMTP_FROM', 'noreply@healthcare.com');
+    constructor() {
+        this.smtpHost = process.env.SMTP_HOST || 'localhost';
+        this.smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
+        this.smtpUser = process.env.SMTP_USER || '';
+        this.smtpPassword = process.env.SMTP_PASSWORD || '';
+        this.smtpFrom = process.env.SMTP_FROM || 'noreply@healthcare.com';
 
         this.initializeTransporter();
     }
@@ -34,7 +34,7 @@ export class EmailService {
             this.smtpHost === 'ses'
                 ? {
                     service: 'SES',
-                    region: this.configService.get('AWS_REGION', 'eu-west-1'),
+                    region: process.env.AWS_REGION || 'eu-west-1',
                 }
                 : {
                     host: this.smtpHost,
@@ -60,7 +60,7 @@ export class EmailService {
                 subject: payload.subject,
                 html: payload.htmlContent,
                 text: payload.textContent || this.stripHtml(payload.htmlContent),
-                replyTo: payload.replyTo || this.configService.get('DPO_EMAIL'),
+                replyTo: payload.replyTo || process.env.DPO_EMAIL,
             };
 
             const result = await this.transporter.sendMail(mailOptions);
@@ -77,7 +77,7 @@ export class EmailService {
         resetToken: string,
         expiresInHours: number = 24,
     ): Promise<boolean> {
-        const resetUrl = `${this.configService.get('APP_URL')}/reset-password?token=${resetToken}`;
+        const resetUrl = `${process.env.APP_URL}/reset-password?token=${resetToken}`;
 
         const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

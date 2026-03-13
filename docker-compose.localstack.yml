@@ -1,0 +1,158 @@
+version: '3.9'
+
+services:
+  # LocalStack for AWS services emulation
+  localstack:
+    image: localstack/localstack:latest
+    container_name: health-platform-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: kms,s3,ses,cloudwatch,logs
+      DEBUG: 0
+      DATA_DIR: /tmp/localstack/data
+      LAMBDA_EXECUTOR: docker
+      DOCKER_HOST: unix:///var/run/docker.sock
+    volumes:
+      - "${TMPDIR:-/tmp}/localstack:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - health-net-local
+
+  # PostgreSQL Database - EU data residency
+  postgres_local:
+    image: postgres:16-alpine
+    container_name: health-platform-db-local
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-health_platform}
+      POSTGRES_USER: ${DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      POSTGRES_INITDB_ARGS: '-c default_transaction_isolation=serializable'
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_data_local:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql
+    networks:
+      - health-net-local
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U ${DATABASE_USER:-postgres}' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis_local:
+    image: redis:7-alpine
+    container_name: health-platform-cache-local
+    ports:
+      - '6380:6379'
+    volumes:
+      - redis_data_local:/data
+    networks:
+      - health-net-local
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis-dev-password}
+    healthcheck:
+      test: [ 'CMD', 'redis-cli', '--raw', 'incr', 'ping' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # NestJS Backend API
+  api_local:
+    build:
+      context: ./packages/server
+      dockerfile: Dockerfile
+    container_name: health-platform-api-local
+    environment:
+      NODE_ENV: development
+      PORT: 3003
+      DATABASE_HOST: postgres_local
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME:-health_platform}
+      DATABASE_USER: ${DATABASE_USER:-postgres}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+      DATABASE_SSL: 'false'
+      JWT_SECRET: ${JWT_SECRET:-dev-super-secret-key-change-in-prod}
+      JWT_EXPIRATION: 15m
+      JWT_REFRESH_EXPIRATION: 7d
+      CORS_ORIGIN: 'http://localhost:3000,http://localhost:3001,http://localhost:3002'
+      ENCRYPTION_KEY_ID: local-dev-key
+      KMS_REGION: eu-central-1
+      LOG_LEVEL: debug
+      AUDIT_LOG_RETENTION_DAYS: 2555
+      REDIS_HOST: redis_local
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis-dev-password}
+      AWS_ENDPOINT_URL: http://localstack:4566
+      AWS_REGION: eu-central-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    ports:
+      - '3003:3003'
+    depends_on:
+      postgres_local:
+        condition: service_healthy
+      redis_local:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+    networks:
+      - health-net-local
+    volumes:
+      - ./packages/server/src:/app/src
+    command: npm run start:dev
+
+  # Next.js Frontend - Patient Portal
+  web_local:
+    build:
+      context: ./packages/web
+      dockerfile: Dockerfile
+    container_name: health-platform-web-local
+    environment:
+      NEXT_PUBLIC_API_URL: http://api_local:3003
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api_local
+    networks:
+      - health-net-local
+
+  # Next.js Admin Dashboard
+  web_dashboard_local:
+    build:
+      context: ./packages/web-dashboard
+      dockerfile: Dockerfile
+    container_name: health-platform-web-dashboard-local
+    environment:
+      NEXT_PUBLIC_API_URL: http://api_local:3003
+    ports:
+      - '3001:3000'
+    depends_on:
+      - api_local
+    networks:
+      - health-net-local
+
+  # Next.js Mobile Patient Portal
+  web_patient_local:
+    build:
+      context: ./packages/web-patient
+      dockerfile: Dockerfile
+    container_name: health-platform-web-patient-local
+    environment:
+      NEXT_PUBLIC_API_URL: http://api_local:3003
+    ports:
+      - '3002:3000'
+    depends_on:
+      - api_local
+    networks:
+      - health-net-local
+
+volumes:
+  postgres_data_local:
+  redis_data_local:
+
+
+networks:
+  health-net-local:
+    driver: bridge

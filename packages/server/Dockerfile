@@ -2,12 +2,15 @@ FROM node:21-alpine AS builder
 
 WORKDIR /app
 
-# Copy packages
-COPY packages/server/ ./
-COPY package*.json ./
+# Copy package files
+COPY package.json ./
+RUN touch package-lock.json && npm cache clean --force
 
 # Install dependencies
-RUN npm install
+RUN npm install --legacy-peer-deps
+
+# Copy source
+COPY . .
 
 # Build the application
 RUN npm run build

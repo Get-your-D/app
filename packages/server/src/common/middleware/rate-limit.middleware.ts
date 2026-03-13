@@ -3,6 +3,21 @@ import { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 import { Logger } from '@nestjs/common';
 
+// Extend Express Request type for rate limiting
+declare global {
+    namespace Express {
+        interface Request {
+            rateLimit?: {
+                limit: number;
+                current: number;
+                remaining: number;
+                resetTime: number;
+            };
+            user?: any;
+        }
+    }
+}
+
 const logger = new Logger('RateLimiting');
 
 // Strict rate limiting for auth endpoints

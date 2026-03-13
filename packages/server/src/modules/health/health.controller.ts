@@ -1,6 +1,6 @@
 import { Controller, Get, Injectable } from '@nestjs/common';
-import { HealthCheck, HealthCheckService, DbHealthIndicator, MemoryHealthIndicator } from '@nestjs/terminus';
-import { Public } from '../../common/decorators/public.decorator';
+import { HealthCheck, HealthCheckService, TypeOrmHealthIndicator, MemoryHealthIndicator } from '@nestjs/terminus';
+import { Public } from '../../auth/decorators/public.decorator';
 
 @Injectable()
 export class HealthIndicatorService {
@@ -22,7 +22,7 @@ export class HealthIndicatorService {
 export class HealthController {
     constructor(
         private health: HealthCheckService,
-        private db: DbHealthIndicator,
+        private db: TypeOrmHealthIndicator,
         private memory: MemoryHealthIndicator,
     ) { }
 

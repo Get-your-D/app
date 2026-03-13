@@ -6,6 +6,7 @@ import { Appointment, AppointmentStatus } from '../../entities/appointment.entit
 import { User } from '../../entities/user.entity';
 import { AuditLog, AuditAction } from '../../entities/audit-log.entity';
 import { ConsentRecord } from '../../entities/consent-record.entity';
+import { UserRole } from '../../common/dtos/auth.dto';
 
 /**
  * GDPR-compliant dashboard metrics service
@@ -37,11 +38,11 @@ export class DashboardMetricsService {
 
         // NO individual patient names or IDs - only counts
         const totalPatients = await this.patientsRepository.count({
-            where: { deletedAt: null },
+            where: { deletedAt: undefined as any },
         });
 
         const totalProviders = await this.usersRepository.count({
-            where: { role: 'provider', deletedAt: null },
+            where: { role: UserRole.PROVIDER, deletedAt: undefined as any },
         });
 
         // Appointments this week (aggregated)
@@ -214,14 +215,14 @@ export class DashboardMetricsService {
 
     private async getConsentSignatureRate(): Promise<number> {
         const totalPatients = await this.patientsRepository.count({
-            where: { deletedAt: null },
+            where: { deletedAt: undefined as any },
         });
 
         const patientsWithConsent = await this.patientsRepository.count({
             where: {
-                deletedAt: null,
+                deletedAt: undefined as any,
                 consentSignedAt: undefined, // Has signed consent
-            },
+            } as any,
         });
 
         if (totalPatients === 0) return 0;
