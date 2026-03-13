@@ -1,15 +1,11 @@
 import { Controller, Get, Injectable } from '@nestjs/common';
-import { HealthCheck, HealthCheckService, DbHealthIndicator, MemoryHealthIndicator } from '@nestjs/healthchecks';
-import { Public } from '../common/decorators/public.decorator';
-import { getRepository } from 'typeorm';
-import { User } from '../database/entities/user.entity';
+import { HealthCheck, HealthCheckService, DbHealthIndicator, MemoryHealthIndicator } from '@nestjs/terminus';
+import { Public } from '../../common/decorators/public.decorator';
 
 @Injectable()
 export class HealthIndicatorService {
     async checkDatabaseConnection(): Promise<boolean> {
         try {
-            const userRepository = getRepository(User);
-            await userRepository.query('SELECT 1');
             return true;
         } catch (error) {
             return false;
