@@ -12,18 +12,18 @@ import { AuditService } from '../common/services/audit.service';
 import { AuditLog } from '../entities/audit-log.entity';
 
 @Module({
-  imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'dev-secret-key-change-in-production',
-      signOptions: {
-        expiresIn: process.env.JWT_EXPIRATION || '15m',
-      },
-    }),
-    TypeOrmModule.forFeature([User, ConsentVersion, ConsentRecord, AuditLog]),
-  ],
-  providers: [AuthService, JwtStrategy, AuditService],
-  controllers: [AuthController],
-  exports: [AuthService],
+    imports: [
+        PassportModule.register({ defaultStrategy: 'jwt' }),
+        JwtModule.register({
+            secret: process.env.JWT_SECRET || 'dev-secret-key-change-in-production',
+            signOptions: {
+                expiresIn: process.env.JWT_EXPIRATION || '15m',
+            },
+        }),
+        TypeOrmModule.forFeature([User, ConsentVersion, ConsentRecord, AuditLog]),
+    ],
+    providers: [AuthService, JwtStrategy, AuditService],
+    controllers: [AuthController],
+    exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }
