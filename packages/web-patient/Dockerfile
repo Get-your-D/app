@@ -4,12 +4,14 @@ WORKDIR /app
 FROM base AS deps
 COPY package.json package-lock.json ./
 COPY packages/web-patient/package.json ./packages/web-patient/
-COPY packages/web-shared/package.json ./packages/web-shared/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/contracts/package.json ./packages/contracts/
 RUN npm ci
 
 FROM deps AS build
 ENV NEXT_TELEMETRY_DISABLED=1
-COPY packages/web-shared/ ./packages/web-shared/
+COPY packages/shared/ ./packages/shared/
+COPY packages/contracts/ ./packages/contracts/
 COPY packages/web-patient/ ./packages/web-patient/
 RUN npm run build --workspace=packages/web-patient
 

@@ -11,7 +11,8 @@ app/
 │   ├── web/             # Next.js frontend app
 │   ├── web-dashboard/   # Next.js dashboard app
 │   ├── web-patient/     # Next.js patient-facing app
-│   └── web-shared/      # Shared UI component library
+│   ├── shared/          # Shared UI component library
+│   └── contracts/       # API contracts (ts-rest + zod)
 └── package.json         # npm workspace root
 ```
 
@@ -22,8 +23,9 @@ app/
 | Package manager | npm workspaces |
 | Backend | NestJS 11, TypeScript |
 | Frontend | Next.js 16, React 19, TypeScript |
-| Styling | Tailwind CSS v4, shadcn/ui |
-| Shared UI | `web-shared` package (Base UI, Tanstack Table, Lucide icons) |
+| Styling | Tailwind CSS v4, DaisyUI |
+| Shared UI | `shared` package |
+| API contracts | `contracts` package (ts-rest + zod) |
 | Testing | Jest (server), built-in Next.js lint |
 
 ## Getting Started
@@ -60,32 +62,25 @@ npm run test:cov      # with coverage
 npm run test:e2e      # end-to-end
 ```
 
-## How the Shared UI Library Works
+## How the Shared Packages Work
 
-`packages/web-shared` contains all shared React components (shadcn/ui-based), hooks, and utilities. The three Next.js apps depend on it directly via npm workspace resolution.
+Both `packages/shared` and `packages/contracts` are source-level libraries — no separate build step. Consumer apps resolve them via TypeScript path aliases and `transpilePackages: ["shared", "contracts"]` in `next.config.ts`. The server resolves `contracts` via tsconfig paths and tsconfig-paths at runtime.
 
-Each app is configured to:
-1. **Resolve the package** via TypeScript path aliases in `tsconfig.json`:
-   ```json
-   "paths": {
-     "web-shared": ["../web-shared/src/index.ts"],
-     "web-shared/*": ["../web-shared/src/*"]
-   }
-   ```
-2. **Transpile source** (not compiled output) via `transpilePackages: ["web-shared"]` in `next.config.ts`.
+**Adding a new shared UI component:**
+1. Add your component under `packages/shared/src/components/ui/`
+2. Export it from `packages/shared/src/index.ts` if it should be a top-level import
+3. Import in any app as `import { MyComponent } from "shared"`
 
-This means you import directly from source and there is no separate build step for `web-shared`. Changes to shared components are immediately reflected in all apps during development.
-
-**Adding a new shared component:**
-1. Add your component under `packages/web-shared/src/components/ui/`
-2. Export it from `packages/web-shared/src/index.ts` if it should be a top-level import
-3. Import in any app as `import { MyComponent } from "web-shared"`
+**Adding a new API contract:**
+1. Define the route in `packages/contracts/src/index.ts` using ts-rest + zod
+2. Implement it in `packages/server` using `@ts-rest/nest`
+3. Consume it in any web app using `@ts-rest/react-query` or a fetch client
 
 ## Adding a New Frontend App
 
 1. Copy `packages/web` or `packages/web-patient` as a template
 2. Update the `name` field in its `package.json`
-3. Keep the `tsconfig.json` path aliases and the `transpilePackages` config in `next.config.ts` so `web-shared` resolves correctly
+3. Keep the `tsconfig.json` path aliases and the `transpilePackages` config in `next.config.ts` so `shared` and `contracts` resolve correctly
 4. Run `npm install` from the repo root to link the new workspace
 
 ## Docker
