@@ -1,0 +1,18 @@
+enum TestResultType {
+    VITAMIN_D
+}
+
+model TestResult {
+    id String @id @default(uuid())
+    patientId String
+    type TestResultType
+    value String
+    testedAt DateTime
+    createdAt DateTime @default(now())
+    testedById String?
+    testedBy Clinic? @relation(fields: [testedById], references: [id])
+    
+    patient Patient @relation(fields: [patientId], references: [id])
+    consentRequests ConsentRequest[]
+    consents Consent[]
+}

@@ -1,0 +1,13 @@
+model Clinic {
+    id String @id @default(uuid())
+    accountId String @unique
+    name String
+    contactEmail String
+    websiteLink String?
+    address String
+    
+    account Account @relation(fields: [accountId], references: [id])
+    testResults TestResult[]
+    consentRequests ConsentRequest[]
+    consents Consent[]
+}

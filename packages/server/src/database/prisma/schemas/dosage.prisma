@@ -1,0 +1,14 @@
+enum SupplementType {
+    VITAMIN_D
+}
+
+model SupplementDosage {
+    id String @id @default(uuid())
+    patientId String
+    dosageAmount String
+    timelineInDays Int
+    createdAt DateTime @default(now())
+    type SupplementType
+    
+    patient Patient @relation(fields: [patientId], references: [id])
+}

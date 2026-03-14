@@ -8,7 +8,7 @@ import { commonRules } from '../shared/eslint/common-rules.mjs';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs'],
+    ignores: ['eslint.config.mjs', 'dist', 'node_modules', 'generated'],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
