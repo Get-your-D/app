@@ -88,6 +88,48 @@ This means you import directly from source and there is no separate build step f
 3. Keep the `tsconfig.json` path aliases and the `transpilePackages` config in `next.config.ts` so `web-shared` resolves correctly
 4. Run `npm install` from the repo root to link the new workspace
 
+## Docker
+
+### Local database
+
+A `docker-compose.yml` at the repo root starts a PostgreSQL 17 instance for local development:
+
+```bash
+docker compose up -d    # start in background
+docker compose down     # stop and remove containers
+docker compose down -v  # also delete the persisted volume
+```
+
+Required environment variables (set in `.env` or your shell):
+
+| Variable | Description |
+|---|---|
+| `DB_USER` | Postgres username |
+| `DB_PASSWORD` | Postgres password |
+| `DB_NAME` | Database name |
+
+The database is exposed on `localhost:5432` and data is persisted in a named Docker volume (`postgres_data`).
+
+### Building production images
+
+All four deployable packages have Dockerfiles. **Always build from the repo root** so npm workspace symlinks resolve correctly:
+
+```bash
+docker build -f packages/server/Dockerfile -t app-server .
+docker build -f packages/web/Dockerfile -t app-web .
+docker build -f packages/web-dashboard/Dockerfile -t app-dashboard .
+docker build -f packages/web-patient/Dockerfile -t app-patient .
+```
+
+| Package | Dockerfile | Port |
+|---|---|---|
+| `packages/server` | `packages/server/Dockerfile` | 3003 |
+| `packages/web` | `packages/web/Dockerfile` | 3000 |
+| `packages/web-dashboard` | `packages/web-dashboard/Dockerfile` | 3001 |
+| `packages/web-patient` | `packages/web-patient/Dockerfile` | 3002 |
+
+Each image uses a multi-stage build (deps → build → production) to keep the final layer small. The Next.js apps use [`output: "standalone"`](https://nextjs.org/docs/app/api-reference/next-config-js/output) so the production image contains only the traced dependencies needed to run the server.
+
 ## Git Hooks (Husky)
 
 [Husky](https://typicode.github.io/husky/) enforces two checks on every commit:
