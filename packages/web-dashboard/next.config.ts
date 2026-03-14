@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
-  transpilePackages: ["web-shared"],
+  transpilePackages: ["shared", "contracts"],
   output: "standalone",
 };
 

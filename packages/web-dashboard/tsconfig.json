@@ -20,8 +20,10 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "web-shared": ["../web-shared/src/index.ts"],
-      "web-shared/*": ["../web-shared/src/*"]
+      "shared": ["../shared/src/index.ts"],
+      "shared/*": ["../shared/src/*"],
+      "contracts": ["../contracts/src/index.ts"],
+      "contracts/*": ["../contracts/src/*"]
     }
   },
   "include": [
