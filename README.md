@@ -88,6 +88,24 @@ This means you import directly from source and there is no separate build step f
 3. Keep the `tsconfig.json` path aliases and the `transpilePackages` config in `next.config.ts` so `web-shared` resolves correctly
 4. Run `npm install` from the repo root to link the new workspace
 
+## Git Hooks (Husky)
+
+[Husky](https://typicode.github.io/husky/) enforces two checks on every commit:
+
+1. **`commit-msg`** — validates the commit message format:
+   ```
+   #<ticket> (<type>): <description>
+   ```
+   - `#<ticket>`: issue number, e.g. `#42`
+   - `<type>`: lowercase keyword, e.g. `feat`, `fix`, `ref`, `chore`, `docs`
+   - `<description>`: non-empty summary
+
+   Valid example: `#42 (feat): add user login`
+
+2. **`pre-commit`** — runs ESLint across all packages (`npm run lint:check --workspaces --if-present`). The commit is rejected if there are any errors or more than 50 warnings.
+
+Hooks run automatically on `git commit`. No manual setup is needed beyond `npm install` (which triggers `husky` via the `prepare` script).
+
 ## Code Style
 
 - **TypeScript** is used throughout — strict mode is enabled in all packages
@@ -96,12 +114,11 @@ This means you import directly from source and there is no separate build step f
 
 To lint and format:
 ```bash
-# Server
-cd packages/server
-npm run lint      # ESLint with auto-fix
-npm run format    # Prettier
+# From repo root — all packages
+npm run format      # Prettier (all packages)
+npm run lint        # ESLint with auto-fix (all packages)
+npm run lint:check  # ESLint without auto-fix, fails on errors or >50 warnings
 
-# Web apps
-cd packages/web   # (or web-dashboard / web-patient)
-npm run lint
+# Per-package (from any package directory)
+npm run lint        # ESLint with auto-fix (server also runs Prettier via plugin)
 ```

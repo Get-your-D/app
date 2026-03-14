@@ -1,1 +1,1 @@
-export const webSharedVersion = "1.0.0";
+export const webSharedVersion = '1.0.0';
