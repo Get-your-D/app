@@ -12,7 +12,10 @@
   "dependencies": {
     "next": "16.1.6",
     "react": "19.2.4",
-    "react-dom": "19.2.3",
+    "react-dom": "19.2.4",
+    "@tanstack/react-table": "^8.21.2",
+    "@tanstack/react-form": "^1.0.0-rc.7",
+    "zod": "^3.25.0",
     "contracts": "file:../contracts",
     "shared": "file:../shared"
   },
