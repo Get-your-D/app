@@ -18,7 +18,7 @@ export enum ConsentAction {
 }
 
 @Entity('consent_records')
-@Index(['userId', 'createdAt'])
+@Index(['userId', 'signedAt'])
 @Index(['appointmentId'])
 export class ConsentRecord {
     @PrimaryGeneratedColumn('uuid')
