@@ -6,13 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "lint:check": "eslint --max-warnings 50"
   },
   "dependencies": {
     "next": "16.1.6",
-    "react": "19.2.3",
+    "react": "19.2.4",
     "react-dom": "19.2.3",
-    "web-shared": "*"
+    "contracts": "file:../contracts",
+    "shared": "file:../shared"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

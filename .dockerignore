@@ -1,0 +1,17 @@
+node_modules
+packages/*/node_modules
+packages/*/.next
+packages/server/dist
+.git
+.gitignore
+.husky
+.vscode
+.idea
+*.swp
+.DS_Store
+.env
+.env.*
+!.env.example
+packages/server/coverage
+packages/server/test
+CLAUDE.md

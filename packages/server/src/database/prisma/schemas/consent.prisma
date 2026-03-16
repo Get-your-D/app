@@ -1,0 +1,40 @@
+enum ConsentRequestStatus {
+    PENDING
+    APPROVED
+    REJECTED
+    EXPIRED
+}
+
+enum ConsentRequestType {
+    SPECIFIC
+    ALL
+}
+
+model ConsentRequest {
+    id String @id @default(uuid())
+    patientId String
+    clinicId String
+    testResultId String?
+    requestedAt DateTime @default(now())
+    expiresAt DateTime
+    status ConsentRequestStatus
+    type ConsentRequestType
+    
+    patient Patient @relation(fields: [patientId], references: [id])
+    clinic Clinic @relation(fields: [clinicId], references: [id])
+    testResult TestResult? @relation(fields: [testResultId], references: [id])
+}
+
+model Consent {
+    id String @id @default(uuid())
+    patientId String
+    clinicId String
+    testResultId String?
+    grantedAt DateTime @default(now())
+    expiresAt DateTime?
+    revokedAt DateTime?
+    
+    patient Patient @relation(fields: [patientId], references: [id])
+    clinic Clinic @relation(fields: [clinicId], references: [id])
+    testResult TestResult? @relation(fields: [testResultId], references: [id])
+}

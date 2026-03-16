@@ -13,7 +13,8 @@ app/
 │   ├── web/             # Next.js frontend app
 │   ├── web-dashboard/   # Next.js dashboard app
 │   ├── web-patient/     # Next.js patient-facing app
-│   └── web-shared/      # Shared UI component library (this package)
+│   ├── shared/          # Shared UI component library
+│   └── contracts/       # API contracts (ts-rest + zod), shared by server and web apps
 └── package.json         # npm workspace root
 ```
 
@@ -37,11 +38,17 @@ npm run lint        # ESLint with auto-fix
 npm run format      # Prettier
 ```
 
-**web-shared** has no build step — it is transpiled directly by the Next.js consumer apps.
+**shared** and **contracts** have no build step — they are transpiled directly by their consumers.
 
-## Architecture: Shared Component Library
+## Architecture: Shared Packages
 
-`web-shared` is a **source-level library** — no separate build step. Consumer apps resolve it via TypeScript path aliases and `transpilePackages: ["web-shared"]` in `next.config.ts`. Changes are immediately reflected in all apps.
+### `shared` — UI component library
+
+A **source-level library** — no separate build step. Consumer apps resolve it via TypeScript path aliases and `transpilePackages: ["shared", "contracts"]` in `next.config.ts`. Changes are immediately reflected in all apps.
+
+### `contracts` — API contracts
+
+Defines ts-rest + zod contracts consumed by both the NestJS server and Next.js frontend apps. Add new routes here and implement them in `server` using `@ts-rest/nest`.
 
 ### Source Structure
 
@@ -66,7 +73,7 @@ src/
 
 1. Create the component under `src/components/ui/`
 2. Export it from `src/index.ts` if it should be a top-level import
-3. Import in any app as `import { MyComponent } from "web-shared"`
+3. Import in any app as `import { MyComponent } from "shared"`
 
 ### Styling
 

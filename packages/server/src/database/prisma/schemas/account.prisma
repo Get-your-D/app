@@ -1,0 +1,14 @@
+enum AccountType {
+    PATIENT
+    CLINIC
+}
+
+model Account {
+    id String @id @default(uuid())
+    email String @unique
+    type AccountType
+    createdAt DateTime @default(now())
+
+    patient Patient?
+    clinic Clinic?
+}

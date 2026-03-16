@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude Code needs your attention\" with title \"Claude Code\"'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(cat | jq -r '.tool_input.file_path // \"\"'); if [[ \"$FILE\" =~ \\.(ts|tsx|js|jsx)$ ]]; then PKG=$(echo \"$FILE\" | grep -oP 'packages/[^/]+'); if [ -n \"$PKG\" ]; then cd /Users/jonasliendl/repos/app && npm run lint --workspace=\"$PKG\" -- --fix 2>&1; fi; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
