@@ -45,7 +45,7 @@ export default function PatientsPage(): JSX.Element {
   const patients = getPatients();
 
   return (
-    <div data-theme="github" className="flex min-h-screen flex-col bg-base-200 text-base-content">
+    <div data-theme="solarGoldDashboard" className="flex min-h-screen flex-col bg-base-200 text-base-content">
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
         <header className="card border border-base-300 bg-base-100 shadow-md">
           <div className="card-body flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">

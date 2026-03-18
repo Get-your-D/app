@@ -1,6 +1,40 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+@plugin "daisyui/theme" {
+  name: "solarGoldDashboard";
+
+  /* main brand */
+  --color-primary: #f5a623; /* solar gold */
+  --color-primary-content: #1f2933;
+
+  /* secondary / accent */
+  --color-secondary: #38bdf8; /* sky blue */
+  --color-secondary-content: #02141f;
+
+  --color-accent: #f97373; /* soft coral */
+  --color-accent-content: #2c0a0a;
+
+  /* surfaces / background */
+  --color-base-100: #fdfbf5; /* very light warm */
+  --color-base-200: #f5f0e2;
+  --color-base-300: #e4d9c3;
+  --color-base-content: #111827;
+
+  /* semantic */
+  --color-info: #38bdf8;
+  --color-info-content: #0f172a;
+
+  --color-success: #16a34a;
+  --color-success-content: #022c22;
+
+  --color-warning: #facc15;
+  --color-warning-content: #422006;
+
+  --color-error: #ef4444;
+  --color-error-content: #fef2f2;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
