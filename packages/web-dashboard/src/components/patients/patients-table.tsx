@@ -154,6 +154,13 @@ export function PatientsTable({ data }: PatientsTableProps): JSX.Element {
       {
         accessorKey: 'status',
         header: () => 'Status',
+        // Use exact matching for the dropdown filter.
+        // TanStack Table defaults to substring matching (e.g. "Active" matches "Inactive"),
+        // but users expect strict equality here.
+        filterFn: (row, columnId, filterValue) => {
+          const rowValue = row.getValue<string>(columnId);
+          return String(rowValue) === String(filterValue);
+        },
         cell: ({ row }) => {
           const value = row.original.status;
           const color =
