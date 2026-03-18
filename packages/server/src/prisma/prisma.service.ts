@@ -1,13 +1,17 @@
 import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '../../../shared/src/db/generated/prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+
+function prismaClientOptions(): Prisma.PrismaClientOptions {
+	return {
+		adapter: new PrismaPg({ connectionString: process.env['DATABASE_URL'] }),
+	};
+}
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
 	constructor() {
-		super({
-			adapter: new PrismaPg({ connectionString: process.env['DATABASE_URL'] }),
-		} as unknown as any);
+		super(prismaClientOptions());
 	}
 
 	async onModuleInit(): Promise<void> {
@@ -15,8 +19,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
 	}
 
 	enableShutdownHooks(app: INestApplication): void {
-		this.$on('beforeExit' as never, () => {
+		const shutdown = (): void => {
 			void app.close();
-		});
+		};
+
+		process.on('SIGINT', shutdown);
+		process.on('SIGTERM', shutdown);
 	}
 }

@@ -4,8 +4,10 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../../../../shared/src/db/generated/prisma"
+  provider = "prisma-client-js"
+  // Generate into the @prisma/client internal path that `import { PrismaClient } from "@prisma/client"`
+  // resolves to (via `@prisma/client` -> `.prisma/client/default`).
+  output   = "../../../node_modules/@prisma/client/.prisma/client"
 }
 
 generator zod {

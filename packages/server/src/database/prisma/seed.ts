@@ -1,12 +1,12 @@
 import 'dotenv/config';
 import { randomUUID } from 'node:crypto';
-import { PrismaClient } from '../../../../shared/src/db/generated/prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 async function main(): Promise<void> {
 	const prisma = new PrismaClient({
 		adapter: new PrismaPg({ connectionString: process.env['DATABASE_URL'] }),
-	} as unknown as any);
+	} satisfies Prisma.PrismaClientOptions);
 
 	const email = `demo.patient+${Date.now()}@example.com`;
 	const accountId = randomUUID();
@@ -25,17 +25,17 @@ async function main(): Promise<void> {
 			dateOfBirth: new Date('1990-01-01T00:00:00.000Z'),
 			weightKg: 72,
 			targetVitaminDNgMl: 35,
-			testResults: {
-				create: [
-					{
-						type: 'VITAMIN_D',
-						value: '18',
-						testedAt: new Date(),
-					},
-				],
-			},
 		},
-		select: { id: true },
+		select: { id: true, accountId: true },
+	});
+
+	await prisma.testResult.create({
+		data: {
+			patientId: patient.id,
+			type: 'VITAMIN_D',
+			value: '18',
+			testedAt: new Date(),
+		},
 	});
 
 	console.log('\nSeeded demo patient for Vitamin D recommendation:\n');

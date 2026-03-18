@@ -1,0 +1,22 @@
+model VitaminDRecommendation {
+    id String @id @default(uuid())
+    patientId String
+    testResultId String @unique
+    createdAt DateTime @default(now())
+
+    // Snapshot inputs
+    weightKg Float
+    currentVitaminDNgMl Float
+    targetVitaminDNgMl Float
+
+    // Snapshot outputs
+    recommendedIuPerDay Int
+    phases Json
+    context String
+    disclaimer String
+    algorithmVersion String
+
+    patient Patient @relation(fields: [patientId], references: [id])
+    testResult TestResult @relation(fields: [testResultId], references: [id])
+}
+

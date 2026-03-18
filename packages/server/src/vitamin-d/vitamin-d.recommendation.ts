@@ -15,7 +15,10 @@ export type VitaminDRecommendation = {
 	phases: VitaminDRecommendationPhase[];
 	context: string;
 	disclaimer: string;
+	algorithmVersion: string;
 };
+
+const ALGORITHM_VERSION = 'v1.0.0';
 
 function roundToNearest(value: number, step: number): number {
 	return Math.round(value / step) * step;
@@ -23,6 +26,40 @@ function roundToNearest(value: number, step: number): number {
 
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
+}
+
+function computeRepletionIuPerDay(args: { delta: number; current: number; weightFactor: number }): number {
+	// Rule-of-thumb: ~100 IU/day raises ~1 ng/mL over 8-12 weeks, scaled by weight.
+	let repletion = args.delta * 100 * args.weightFactor;
+
+	// Ensure meaningful minimums for deficiency.
+	if (args.current < 10) repletion = Math.max(repletion, 6000);
+	else if (args.current < 20) repletion = Math.max(repletion, 4000);
+	else if (args.current < 30 && args.delta > 0) repletion = Math.max(repletion, 2000);
+
+	repletion = clamp(repletion, 1000, 10000);
+	return roundToNearest(repletion, 500);
+}
+
+function computeMaintenanceIuPerDay(weightFactor: number): number {
+	let maintenance = 1200 + 800 * weightFactor;
+	maintenance = clamp(maintenance, 1000, 4000);
+	return roundToNearest(maintenance, 500);
+}
+
+function buildPhases(args: {
+	delta: number;
+	repletionRounded: number;
+	maintenanceRounded: number;
+}): VitaminDRecommendationPhase[] {
+	const phases: VitaminDRecommendationPhase[] = [];
+	if (args.delta > 0) phases.push({ phase: 'repletion', iuPerDay: args.repletionRounded, durationDays: 56 });
+	phases.push({ phase: 'maintenance', iuPerDay: args.maintenanceRounded });
+	return phases;
+}
+
+function buildContext(args: { weightKg: number; current: number; target: number }): string {
+	return `Based on your weight (${Math.round(args.weightKg)} kg) and Vitamin D levels (current ${args.current} ng/mL → target ${args.target} ng/mL).`;
 }
 
 /**
@@ -39,35 +76,18 @@ export function recommendVitaminDIuPerDay(input: VitaminDRecommendationInput): V
 	const delta = Math.max(0, target - current);
 	const weightFactor = clamp(weightKg / 70, 0.6, 1.6);
 
-	// Rule-of-thumb: ~100 IU/day raises ~1 ng/mL over 8-12 weeks, scaled by weight.
-	let repletion = delta * 100 * weightFactor;
-
-	// Ensure meaningful minimums for deficiency.
-	if (current < 10) repletion = Math.max(repletion, 6000);
-	else if (current < 20) repletion = Math.max(repletion, 4000);
-	else if (current < 30 && delta > 0) repletion = Math.max(repletion, 2000);
-
-	repletion = clamp(repletion, 1000, 10000);
-	const repletionRounded = roundToNearest(repletion, 500);
-
-	// Conservative ongoing maintenance, scaled by weight.
-	let maintenance = 1200 + 800 * weightFactor;
-	maintenance = clamp(maintenance, 1000, 4000);
-	const maintenanceRounded = roundToNearest(maintenance, 500);
-
-	const phases: VitaminDRecommendationPhase[] = [];
-	if (delta > 0) {
-		phases.push({ phase: 'repletion', iuPerDay: repletionRounded, durationDays: 56 });
-	}
-	phases.push({ phase: 'maintenance', iuPerDay: maintenanceRounded });
+	const repletionRounded = computeRepletionIuPerDay({ delta, current, weightFactor });
+	const maintenanceRounded = computeMaintenanceIuPerDay(weightFactor);
+	const phases = buildPhases({ delta, repletionRounded, maintenanceRounded });
 
 	const recommendedIuPerDay = delta > 0 ? repletionRounded : maintenanceRounded;
 
 	return {
 		recommendedIuPerDay,
 		phases,
-		context: `Based on your weight (${Math.round(weightKg)} kg) and Vitamin D levels (current ${current} ng/mL → target ${target} ng/mL).`,
+		context: buildContext({ weightKg, current, target }),
 		disclaimer:
 			'This recommendation is informational and not medical advice. Consider contraindications (e.g., hypercalcemia, kidney disease) and retest after the repletion phase.',
+		algorithmVersion: ALGORITHM_VERSION,
 	};
 }

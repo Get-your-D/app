@@ -14,4 +14,5 @@ model Patient {
     consentRequests ConsentRequest[]
     consents Consent[]
     supplementDosages SupplementDosage[]
+    vitaminDRecommendations VitaminDRecommendation[]
 }

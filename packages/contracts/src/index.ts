@@ -14,6 +14,7 @@ const vitaminDRecommendationSchema = z.object({
 	phases: z.array(vitaminDRecommendationPhaseSchema).min(1),
 	context: z.string(),
 	disclaimer: z.string(),
+	algorithmVersion: z.string(),
 });
 
 const patientVitDContextSchema = z.object({
@@ -28,6 +29,8 @@ const testResultSchema = z.object({
 	id: z.string(),
 	type: z.literal('VITAMIN_D'),
 	value: z.string(),
+	valueNumber: z.number().nullable().optional(),
+	unit: z.enum(['NG_ML', 'NMOL_L']).nullable().optional(),
 	testedAt: z.string().datetime(),
 	createdAt: z.string().datetime(),
 });
