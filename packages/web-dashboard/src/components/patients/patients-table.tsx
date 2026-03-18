@@ -312,14 +312,14 @@ export function PatientsTable({ data }: PatientsTableProps): JSX.Element {
         <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
           <input
             type="search"
-            className="w-full rounded-md border border-orange-200 bg-white px-3 py-2 text-sm text-orange-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 sm:max-w-xs"
+            className="input input-bordered input-sm w-full bg-base-100 text-base-content border-base-300 sm:max-w-xs"
             placeholder="Search by name or email"
             value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
           />
 
           <select
-            className="w-full rounded-md border border-orange-200 bg-white px-3 py-2 text-sm text-orange-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 sm:w-48"
+            className="select select-bordered select-sm w-full bg-base-100 text-base-content border-base-300 sm:w-48"
             value={statusFilter ?? ''}
             onChange={(e) => {
               const value = e.target.value || null;
@@ -347,14 +347,14 @@ export function PatientsTable({ data }: PatientsTableProps): JSX.Element {
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            className="inline-flex items-center rounded-md bg-orange-600 px-3 py-2 text-xs font-medium text-white shadow-sm hover:bg-orange-700"
+            className="btn btn-primary btn-sm"
             onClick={handleExportCsv}
           >
             Export CSV
           </button>
           <button
             type="button"
-            className="inline-flex items-center rounded-md border border-orange-200 bg-white px-3 py-2 text-xs font-medium text-orange-700 shadow-sm hover:bg-orange-50"
+            className="btn btn-ghost btn-sm"
             onClick={handleExportPdf}
           >
             Export PDF
@@ -363,14 +363,14 @@ export function PatientsTable({ data }: PatientsTableProps): JSX.Element {
       </div>
 
       {selectedCount > 0 && (
-        <div className="flex flex-col gap-3 rounded-md border border-dashed border-amber-400 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-100 sm:flex-row sm:items-center sm:justify-between">
-          <span>
+        <div className="alert alert-warning flex flex-col gap-3 px-3 py-2 text-xs sm:flex-row sm:items-center sm:justify-between">
+          <span className="font-medium">
             {selectedCount} patient{selectedCount === 1 ? '' : 's'} selected
           </span>
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              className="rounded-md bg-amber-600 px-2 py-1 text-xs font-medium text-amber-50 hover:bg-amber-700"
+              className="btn btn-warning btn-xs"
               // TODO: Wire to reminder API.
               onClick={() => {
                 console.log('Send re-test reminders to', Array.from(selectedIds));
@@ -383,7 +383,7 @@ export function PatientsTable({ data }: PatientsTableProps): JSX.Element {
               name="status"
               children={(field) => (
                 <select
-                  className="rounded-md border border-input bg-background px-2 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="select select-bordered select-xs bg-base-100 text-base-content border-base-300"
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value as (typeof statusOptions)[number])}
                 >
@@ -398,7 +398,7 @@ export function PatientsTable({ data }: PatientsTableProps): JSX.Element {
 
             <button
               type="button"
-              className="rounded-md border border-input bg-background px-2 py-1 text-xs font-medium shadow-sm hover:bg-accent"
+              className="btn btn-outline btn-xs"
               onClick={() => {
                 void bulkStatusForm.handleSubmit();
               }}
@@ -409,16 +409,16 @@ export function PatientsTable({ data }: PatientsTableProps): JSX.Element {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-md border border-orange-100 bg-white">
-        <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-orange-50">
+      <div className="overflow-x-auto rounded-box border border-base-300 bg-base-100">
+        <table className="table table-zebra text-sm">
+          <thead className="bg-base-200">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
                     scope="col"
-                    className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-orange-900/80"
+                    className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-base-content/80"
                   >
                     {header.isPlaceholder ? null : (
                       <button
@@ -438,16 +438,16 @@ export function PatientsTable({ data }: PatientsTableProps): JSX.Element {
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-border bg-white">
+          <tbody className="bg-base-100">
             {table.getRowModel().rows.length === 0 ? (
               <tr>
-                <td className="px-3 py-8 text-center text-sm text-muted-foreground" colSpan={columns.length}>
+                <td className="px-3 py-8 text-center text-sm text-base-content/60" colSpan={columns.length}>
                   No patients found.
                 </td>
               </tr>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="hover:bg-muted/40">
+                <tr key={row.id} className="hover:bg-base-200">
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id} className="px-3 py-3 align-middle">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -460,11 +460,11 @@ export function PatientsTable({ data }: PatientsTableProps): JSX.Element {
         </table>
       </div>
 
-      <div className="flex flex-col items-start justify-between gap-3 text-xs text-orange-900/80 sm:flex-row sm:items-center">
+      <div className="flex flex-col items-start justify-between gap-3 text-xs text-base-content/80 sm:flex-row sm:items-center">
         <div className="flex items-center gap-2">
           <span>Rows per page</span>
           <select
-            className="rounded-md border border-orange-200 bg-white px-2 py-1 text-xs text-orange-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+            className="select select-bordered select-xs w-24 bg-base-100 text-base-content border-base-300"
             value={table.getState().pagination.pageSize}
             onChange={(e) => {
               table.setPageSize(Number(e.target.value));
@@ -483,10 +483,10 @@ export function PatientsTable({ data }: PatientsTableProps): JSX.Element {
             Page {table.getState().pagination.pageIndex + 1} of{' '}
             {table.getPageCount() || 1}
           </span>
-          <div className="flex items-center gap-1 text-orange-900">
+          <div className="flex items-center gap-1 text-base-content">
             <button
               type="button"
-              className="rounded-md border border-orange-200 bg-white px-2 py-1 text-xs text-orange-900 shadow-sm hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn btn-outline btn-xs disabled:btn-disabled"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
@@ -494,7 +494,7 @@ export function PatientsTable({ data }: PatientsTableProps): JSX.Element {
             </button>
             <button
               type="button"
-              className="rounded-md border border-orange-200 bg-white px-2 py-1 text-xs text-orange-900 shadow-sm hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn btn-outline btn-xs disabled:btn-disabled"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >

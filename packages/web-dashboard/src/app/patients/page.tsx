@@ -45,21 +45,25 @@ export default function PatientsPage(): JSX.Element {
   const patients = getPatients();
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#fef6ec] text-zinc-900">
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-6 py-8">
-        <header className="flex flex-col items-start justify-between gap-4 rounded-xl bg-white/90 px-5 py-4 shadow-sm ring-1 ring-orange-100 sm:flex-row sm:items-center">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-orange-900">
+    <div data-theme="github" className="flex min-h-screen flex-col bg-base-200 text-base-content">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
+        <header className="card border border-base-300 bg-base-100 shadow-md">
+          <div className="card-body flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight">
               Patients
-            </h1>
-            <p className="mt-1 text-sm text-orange-900/70">
-              Monitor vitamin D testing compliance and upcoming re-tests.
-            </p>
+              </h1>
+              <p className="mt-1 text-sm text-base-content/70">
+                Monitor vitamin D testing compliance and upcoming re-tests.
+              </p>
+            </div>
           </div>
         </header>
 
-        <div className="rounded-xl bg-white/95 p-5 shadow-sm ring-1 ring-orange-100">
+        <div className="card border border-base-300 bg-base-100 shadow-md">
+          <div className="card-body p-4 sm:p-5">
           <PatientsTable data={patients} />
+          </div>
         </div>
       </main>
     </div>
