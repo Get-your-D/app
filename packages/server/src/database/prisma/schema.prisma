@@ -5,12 +5,12 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../../../../shared/db/generated/prisma"
+  output   = "../../../../shared/src/db/generated/prisma"
 }
 
 generator zod {
   provider = "prisma-zod-generator"
-  output   = "../../../../shared/db/generated/zod"
+  output   = "../../../../shared/src/db/generated/zod"
   config = "./prisma/zod-generator.config.json"
 }
 
