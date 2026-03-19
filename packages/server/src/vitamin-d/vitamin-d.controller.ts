@@ -69,6 +69,11 @@ export class VitaminDController {
 	}
 
 	private loadSnapshot(testResultId: string): Promise<{
+		// Snapshot inputs (for cache invalidation)
+		weightKg: number;
+		currentVitaminDNgMl: number;
+		targetVitaminDNgMl: number;
+
 		recommendedIuPerDay: number;
 		phases: unknown;
 		context: string;
@@ -78,6 +83,9 @@ export class VitaminDController {
 		return this.prisma.vitaminDRecommendation.findUnique({
 			where: { testResultId },
 			select: {
+				weightKg: true,
+				currentVitaminDNgMl: true,
+				targetVitaminDNgMl: true,
 				recommendedIuPerDay: true,
 				phases: true,
 				context: true,
@@ -100,32 +108,46 @@ export class VitaminDController {
 		disclaimer: string;
 		algorithmVersion: string;
 	}> {
-		const existing = await this.loadSnapshot(args.testResultId);
-		if (existing) {
-			return {
-				recommendedIuPerDay: existing.recommendedIuPerDay,
-				phases: existing.phases,
-				context: existing.context,
-				disclaimer: existing.disclaimer,
-				algorithmVersion: existing.algorithmVersion,
-			};
-		}
-
 		const computed = recommendVitaminDIuPerDay({
 			weightKg: args.weightKg,
 			currentVitaminDNgMl: args.currentVitaminDNgMl,
 			targetVitaminDNgMl: args.targetVitaminDNgMl,
 		});
 
-		await this.prisma.vitaminDRecommendation.create({
-			data: {
+		const existing = await this.loadSnapshot(args.testResultId);
+
+		// Snapshot cache key is effectively (testResultId + personalization inputs + algorithm version).
+		// If inputs changed (via "Save personalization"), recompute and overwrite the snapshot.
+		const inputsMatch =
+			existing &&
+			Math.abs(existing.weightKg - args.weightKg) < 1e-6 &&
+			Math.abs(existing.currentVitaminDNgMl - args.currentVitaminDNgMl) < 1e-6 &&
+			Math.abs(existing.targetVitaminDNgMl - args.targetVitaminDNgMl) < 1e-6 &&
+			existing.algorithmVersion === computed.algorithmVersion;
+
+		if (inputsMatch) return computed;
+
+		await this.prisma.vitaminDRecommendation.upsert({
+			where: { testResultId: args.testResultId },
+			create: {
 				patientId: args.patientId,
 				testResultId: args.testResultId,
 				weightKg: args.weightKg,
 				currentVitaminDNgMl: args.currentVitaminDNgMl,
 				targetVitaminDNgMl: args.targetVitaminDNgMl,
 				recommendedIuPerDay: computed.recommendedIuPerDay,
-				phases: computed.phases as object,
+				phases: computed.phases,
+				context: computed.context,
+				disclaimer: computed.disclaimer,
+				algorithmVersion: computed.algorithmVersion,
+			},
+			update: {
+				patientId: args.patientId,
+				weightKg: args.weightKg,
+				currentVitaminDNgMl: args.currentVitaminDNgMl,
+				targetVitaminDNgMl: args.targetVitaminDNgMl,
+				recommendedIuPerDay: computed.recommendedIuPerDay,
+				phases: computed.phases,
 				context: computed.context,
 				disclaimer: computed.disclaimer,
 				algorithmVersion: computed.algorithmVersion,
