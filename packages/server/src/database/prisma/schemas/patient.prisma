@@ -4,10 +4,15 @@ model Patient {
     firstName String
     lastName String
     dateOfBirth DateTime
+    /// Body weight in kilograms (used for personalized dosing).
+    weightKg Float?
+    /// Target 25(OH)D level in ng/mL for recommendation personalization.
+    targetVitaminDNgMl Float?
     
     account Account @relation(fields: [accountId], references: [id])
     testResults TestResult[]
     consentRequests ConsentRequest[]
     consents Consent[]
     supplementDosages SupplementDosage[]
+    vitaminDRecommendations VitaminDRecommendation[]
 }

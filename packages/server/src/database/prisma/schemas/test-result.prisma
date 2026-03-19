@@ -2,11 +2,18 @@ enum TestResultType {
     VITAMIN_D
 }
 
+enum VitaminDUnit {
+    NG_ML
+    NMOL_L
+}
+
 model TestResult {
     id String @id @default(uuid())
     patientId String
     type TestResultType
     value String
+    valueNumber Float?
+    unit VitaminDUnit?
     testedAt DateTime
     createdAt DateTime @default(now())
     testedById String?
@@ -15,4 +22,5 @@ model TestResult {
     patient Patient @relation(fields: [patientId], references: [id])
     consentRequests ConsentRequest[]
     consents Consent[]
+    vitaminDRecommendation VitaminDRecommendation?
 }
