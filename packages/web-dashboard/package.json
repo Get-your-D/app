@@ -16,6 +16,10 @@
     "contracts": "file:../contracts",
     "shared": "file:../shared"
   },
+  "optionalDependencies": {
+    "lightningcss-win32-x64-msvc": "1.31.1",
+    "@tailwindcss/oxide-win32-x64-msvc": "4.2.1"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
