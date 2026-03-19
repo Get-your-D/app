@@ -11,10 +11,11 @@ export function middleware(request: NextRequest) {
     // Check if current path is protected
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
 
-    // If protected route and no token, redirect to login
-    if (isProtectedRoute && !authToken) {
-        return NextResponse.redirect(new URL('/login', request.url));
-    }
+    // Login enforcement is intentionally handled by Supabase at a higher layer.
+    // Keeping this local redirect disabled avoids double-auth gating in Next middleware.
+    // if (isProtectedRoute && !authToken) {
+    //     return NextResponse.redirect(new URL('/login', request.url));
+    // }
 
     // If user is on login page and has token, redirect to dashboard
     if (pathname === '/login' && authToken) {

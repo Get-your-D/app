@@ -78,5 +78,5 @@ export function usePatientRecords(patientId?: string) {
         }
     };
 
-    return { records, loading, error, createRecord, deleteRecord };
+    return { records, loading, isLoading: loading, error, createRecord, deleteRecord };
 }

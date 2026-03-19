@@ -88,5 +88,5 @@ export function useAppointments(filters?: { patientId?: string; providerId?: str
         }
     };
 
-    return { appointments, loading, error, createAppointment, recordConsent };
+    return { appointments, loading, isLoading: loading, error, createAppointment, recordConsent };
 }

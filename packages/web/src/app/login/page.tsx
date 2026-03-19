@@ -9,28 +9,38 @@ import { Label } from '@web-shared/components/ui/label';
 import { Alert, AlertDescription } from '@web-shared/components/ui/alert';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
     const { login, isLoading, error } = useAuth();
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [mfaRequired, setMfaRequired] = useState(false);
-    const [mfaToken, setMfaToken] = useState('');
     const [mfaCode, setMfaCode] = useState('');
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const result = await login(email, password, mfaCode || undefined);
 
         if (result?.mfaRequired) {
             setMfaRequired(true);
-            setMfaToken(result.mfaToken);
+            return;
         }
+
+        const nextPath = searchParams.get('next');
+        if (nextPath) {
+            router.push(nextPath);
+            return;
+        }
+
+        router.push('/dashboard');
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100 px-4">
             <Card className="w-full max-w-md shadow-lg">
                 <CardHeader className="space-y-2">
                     <CardTitle className="text-2xl">Healthcare Portal</CardTitle>
@@ -39,7 +49,12 @@ export default function LoginPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleLogin} className="space-y-4">
+                    <form
+                        onSubmit={(e) => {
+                            void handleLogin(e);
+                        }}
+                        className="space-y-4"
+                    >
                         {error && (
                             <Alert variant="destructive">
                                 <AlertCircle className="h-4 w-4" />
@@ -56,7 +71,7 @@ export default function LoginPage() {
                                         type="email"
                                         placeholder="your@email.com"
                                         value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                                         disabled={isLoading}
                                         required
                                     />
@@ -70,7 +85,7 @@ export default function LoginPage() {
                                             type={showPassword ? 'text' : 'password'}
                                             placeholder="••••••••"
                                             value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                                             disabled={isLoading}
                                             required
                                         />
@@ -98,7 +113,9 @@ export default function LoginPage() {
                                     type="text"
                                     placeholder="000000"
                                     value={mfaCode}
-                                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                        setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))
+                                    }
                                     maxLength={6}
                                     disabled={isLoading}
                                     required
@@ -115,7 +132,7 @@ export default function LoginPage() {
 
                     <div className="mt-6 border-t pt-4">
                         <p className="text-sm text-center text-gray-600">
-                            Don't have an account?{' '}
+                            Don&apos;t have an account?{' '}
                             <Link href="/register" className="text-blue-600 hover:underline font-semibold">
                                 Sign up
                             </Link>
