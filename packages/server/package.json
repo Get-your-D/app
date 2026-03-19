@@ -27,17 +27,9 @@
   "dependencies": {
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
-    "@nestjs/platform-express": "^11.1.16",
-    "@prisma/adapter-pg": "^7.5.0",
-    "@prisma/client": "^7.5.0",
-    "@ts-rest/nest": "^3.52.1",
-    "contracts": "file:../contracts",
-    "dotenv": "^16.6.1",
-    "pg": "^8.20.0",
-    "prisma-zod-generator": "^2.1.4",
+    "@nestjs/platform-express": "^11.0.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1",
-    "zod": "^3.25.76"
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -50,6 +42,7 @@
     "@types/node": "^22.19.15",
     "@types/pg": "^8.18.0",
     "@types/supertest": "^6.0.2",
+    "@types/uuid": "^9.0.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",

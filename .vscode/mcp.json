@@ -1,0 +1,66 @@
+{
+    "inputs": [
+        {
+            "id": "github-pat",
+            "type": "promptString",
+            "description": "GitHub Personal Access Token (needs repo, read:org scopes)",
+            "password": true
+        }
+    ],
+    "servers": {
+        // ── PostgreSQL ──────────────────────────────────────────────────────────
+        // Gives the model direct read access to the running health_platform DB so
+        // it can inspect tables, write accurate TypeORM / Prisma queries, and
+        // validate schema assumptions without guessing.
+        "postgres": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-postgres",
+                "postgresql://postgres:postgres@localhost:5432/health_platform"
+            ]
+        },
+        // ── Context7 (library documentation) ────────────────────────────────────
+        // Surfaces up-to-date, version-pinned docs for every major library in
+        // this stack: Next.js 16, NestJS 11, React 19, Tailwind CSS v4,
+        // TypeScript 5, Zod, @ts-rest, class-validator, TypeORM, and more.
+        // The model resolves library IDs on demand — no extra config needed.
+        "context7": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@upstash/context7-mcp"
+            ]
+        },
+        // ── GitHub ───────────────────────────────────────────────────────────────
+        // Lets the model search code, read issues/PRs, and perform repository
+        // ops. Token is prompted once and cached for the session.
+        "github": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-github"
+            ],
+            "env": {
+                "GITHUB_PERSONAL_ACCESS_TOKEN": "${input:github-pat}"
+            }
+        },
+        // ── Prisma ───────────────────────────────────────────────────────────────
+        // Provides Prisma schema awareness (migrations, relations, types).
+        // Active once a prisma/schema.prisma is added to packages/server.
+        // The server package already has prisma@^7.5.0 installed.
+        "prisma": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "prisma",
+                "mcp"
+            ],
+            "cwd": "${workspaceFolder}/packages/server"
+        }
+    }
+}
