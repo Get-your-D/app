@@ -1,6 +1,6 @@
 'use client';
-
-import { JSX, useCallback, useEffect, useMemo, useState } from 'react';
+/* eslint-disable max-statements, complexity -- B2C page: form, fetch, results, error states */
+import { JSX, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type ApiResponse = {
 	patient: {
@@ -43,6 +43,7 @@ export default function Home(): JSX.Element {
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [saving, setSaving] = useState(false);
+	const resultsRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		const url = new URL(window.location.href);
@@ -56,14 +57,29 @@ export default function Home(): JSX.Element {
 		setError(null);
 		try {
 			const res = await fetch(`${apiBase}/b2c/patients/${patientId}/vitamin-d/latest`, { cache: 'no-store' });
-			if (!res.ok) throw new Error(`Request failed (${res.status})`);
+			if (!res.ok) {
+				let detail: string | undefined;
+				try {
+					const body = (await res.json()) as { message?: string; detail?: string };
+					detail = body.detail ?? body.message;
+				} catch {
+					// ignore
+				}
+				throw new Error(detail ? `Request failed (${res.status}): ${detail}` : `Request failed (${res.status})`);
+			}
 			const json = (await res.json()) as ApiResponse;
 			setData(json);
 			setWeightKg(json.patient.weightKg === null ? '' : String(json.patient.weightKg));
 			setTargetNgMl(json.patient.targetVitaminDNgMl === null ? '30' : String(json.patient.targetVitaminDNgMl));
+			setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 		} catch (e) {
 			setData(null);
-			setError(e instanceof Error ? e.message : 'Unknown error');
+			const msg = e instanceof Error ? e.message : 'Unknown error';
+			setError(
+				msg.includes('fetch') || msg.includes('Failed')
+					? `${msg} — Is the API running? Start it with: npm run start:dev (in packages/server), then open http://localhost:3001`
+					: msg
+			);
 		} finally {
 			setLoading(false);
 		}
@@ -103,7 +119,10 @@ export default function Home(): JSX.Element {
 				<div className="flex flex-col gap-2">
 					<h1 className="text-3xl font-bold tracking-tight">Vitamin D test results</h1>
 					<p className="text-base-content/70">
-						View your latest result and an auto-calculated dosing plan based on your weight and target level.
+						Auto-calculated dosing based on your <strong>body weight</strong>, <strong>current Vitamin D level</strong>, and <strong>target level</strong>. Recommendation is shown alongside your test result.
+					</p>
+					<p className="text-sm text-base-content/60">
+						Paste a patient ID below and click <strong>Load latest</strong>. The API must be running on port 3003.
 					</p>
 				</div>
 
@@ -169,22 +188,25 @@ export default function Home(): JSX.Element {
 				</div>
 
 				{error ? (
-					<div className="mt-6 alert alert-error">
-						<span>{error}</span>
+					<div className="mt-6 alert alert-error text-left">
+						<span className="break-words">{error}</span>
 					</div>
 				) : null}
 
 				{data?.message ? (
-					<div className="mt-6 alert">
+					<div className="mt-6 alert alert-warning text-left">
 						<span>{data.message}</span>
 					</div>
 				) : null}
 
 				{data ? (
-					<div className="mt-6 grid gap-4 lg:grid-cols-2">
-						<div className="rounded-2xl border border-base-300 bg-base-100 p-5">
+					<div ref={resultsRef} className="mt-10 scroll-mt-6">
+						<h2 className="mb-1 text-xl font-bold text-base-content">Your results</h2>
+						<p className="mb-4 text-sm text-base-content/60">Test result and recommended dosing plan together</p>
+						<div className="grid gap-4 lg:grid-cols-2">
+						<div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
 							<div className="flex items-center justify-between">
-								<h2 className="text-lg font-semibold">Latest test result</h2>
+								<h3 className="text-lg font-semibold">Latest test result</h3>
 								<span className="badge badge-outline">25(OH)D</span>
 							</div>
 
@@ -202,21 +224,30 @@ export default function Home(): JSX.Element {
 							)}
 						</div>
 
-						<div className="rounded-2xl border border-base-300 bg-base-100 p-5">
+						<div className="rounded-2xl border border-base-300 bg-base-100 p-5 shadow-sm">
 							<div className="flex items-center justify-between">
-								<h2 className="text-lg font-semibold">Recommended dosing plan</h2>
+								<h3 className="text-lg font-semibold">Recommended dosing plan</h3>
 								<span className="badge badge-primary">IU/day</span>
 							</div>
 
 							{data.recommendation ? (
 								<div className="mt-4 flex flex-col gap-4">
-									<div className="rounded-xl bg-base-200/50 p-4">
-										<div className="text-sm text-base-content/70">Recommended now</div>
+									{/* Actionable primary recommendation */}
+									<div className="rounded-xl bg-primary/10 border border-primary/20 p-4">
+										<div className="text-sm font-medium text-base-content/80">Take daily</div>
 										<div className="text-3xl font-bold">{data.recommendation.recommendedIuPerDay.toLocaleString()} IU/day</div>
-										<div className="mt-2 text-sm text-base-content/80">{data.recommendation.context}</div>
+										<div className="mt-1 text-sm text-base-content/70">Recommended IU per day based on your metrics</div>
 									</div>
 
-									<div className="space-y-3">
+									{/* Personalization context */}
+									<div className="rounded-xl bg-base-200/50 p-3">
+										<div className="text-xs font-semibold uppercase tracking-wide text-base-content/60">Based on your weight and levels</div>
+										<div className="mt-1 text-sm text-base-content/80">{data.recommendation.context}</div>
+									</div>
+
+									{/* Phases: clear, actionable steps */}
+									<div className="space-y-2">
+										<div className="text-sm font-semibold text-base-content/80">Your plan</div>
 										{data.recommendation.phases.map((p) => (
 											<div
 												key={`${p.phase}-${p.iuPerDay}-${p.durationDays ?? 'ongoing'}`}
@@ -225,10 +256,12 @@ export default function Home(): JSX.Element {
 												<div>
 													<div className="font-semibold capitalize">{p.phase}</div>
 													<div className="text-sm text-base-content/70">
-														{p.durationDays ? `For ${p.durationDays} days, then reassess.` : 'Ongoing daily maintenance.'}
+														{p.durationDays
+															? `Take ${p.iuPerDay.toLocaleString()} IU/day for ${p.durationDays} days, then reassess.`
+															: 'Ongoing: take daily for maintenance.'}
 													</div>
 												</div>
-												<div className="text-right">
+												<div className="text-right shrink-0">
 													<div className="text-xl font-bold">{p.iuPerDay.toLocaleString()}</div>
 													<div className="text-sm text-base-content/70">IU/day</div>
 												</div>
@@ -240,13 +273,16 @@ export default function Home(): JSX.Element {
 								</div>
 							) : (
 								<div className="mt-4 text-base-content/70">
-									Add your weight (and optionally a target) to generate a personalized plan.
+									Add your <strong>body weight</strong> (and optionally target level) above and save to generate a personalized IU/day plan based on your metrics.
 								</div>
 							)}
 						</div>
+						</div>
 					</div>
 				) : (
-					<div className="mt-8 text-base-content/70">Enter a patient ID to load results and recommendations.</div>
+					<div className="mt-8 rounded-xl border border-dashed border-base-300 bg-base-200/30 p-8 text-center text-base-content/70">
+						Enter a patient ID above and click <strong>Load latest</strong> to see your test result and dosing plan here.
+					</div>
 				)}
 			</div>
 		</div>

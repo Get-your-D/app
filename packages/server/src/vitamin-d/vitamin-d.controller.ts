@@ -1,8 +1,16 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Put } from '@nestjs/common';
+import {
+	BadRequestException,
+	Body,
+	Controller,
+	Get,
+	InternalServerErrorException,
+	NotFoundException,
+	Param,
+	Put,
+} from '@nestjs/common';
 import { z } from 'zod';
 import { PrismaService } from '../prisma/prisma.service';
 import { recommendVitaminDIuPerDay } from './vitamin-d.recommendation';
-import type { PrismaClient } from '@prisma/client';
 
 const updateMetricsSchema = z.object({
 	weightKg: z.number().positive().max(500).optional(),
@@ -12,33 +20,6 @@ const updateMetricsSchema = z.object({
 @Controller('b2c/patients/:patientId/vitamin-d')
 export class VitaminDController {
 	constructor(private readonly prisma: PrismaService) {}
-
-	private get prismaClient(): PrismaClient {
-		return this.prisma as unknown as PrismaClient;
-	}
-
-	private recommendationModel(): {
-		findUnique: (args: unknown) => Promise<{
-			recommendedIuPerDay: number;
-			phases: unknown;
-			context: string;
-			disclaimer: string;
-			algorithmVersion: string;
-		} | null>;
-		create: (args: unknown) => Promise<unknown>;
-	} {
-		const delegate = (this.prismaClient as unknown as Record<string, unknown>)['vitaminDRecommendation'];
-		return delegate as {
-			findUnique: (args: unknown) => Promise<{
-				recommendedIuPerDay: number;
-				phases: unknown;
-				context: string;
-				disclaimer: string;
-				algorithmVersion: string;
-			} | null>;
-			create: (args: unknown) => Promise<unknown>;
-		};
-	}
 
 	private async loadPatient(patientId: string): Promise<{
 		id: string;
@@ -94,7 +75,7 @@ export class VitaminDController {
 		disclaimer: string;
 		algorithmVersion: string;
 	} | null> {
-		return this.recommendationModel().findUnique({
+		return this.prisma.vitaminDRecommendation.findUnique({
 			where: { testResultId },
 			select: {
 				recommendedIuPerDay: true,
@@ -136,7 +117,7 @@ export class VitaminDController {
 			targetVitaminDNgMl: args.targetVitaminDNgMl,
 		});
 
-		await this.recommendationModel().create({
+		await this.prisma.vitaminDRecommendation.create({
 			data: {
 				patientId: args.patientId,
 				testResultId: args.testResultId,
@@ -144,7 +125,7 @@ export class VitaminDController {
 				currentVitaminDNgMl: args.currentVitaminDNgMl,
 				targetVitaminDNgMl: args.targetVitaminDNgMl,
 				recommendedIuPerDay: computed.recommendedIuPerDay,
-				phases: computed.phases,
+				phases: computed.phases as object,
 				context: computed.context,
 				disclaimer: computed.disclaimer,
 				algorithmVersion: computed.algorithmVersion,
@@ -155,44 +136,51 @@ export class VitaminDController {
 	}
 
 	@Get('latest')
+	// eslint-disable-next-line max-statements -- single handler with clear branches
 	async getLatest(@Param('patientId') patientId: string): Promise<unknown> {
-		const patient = await this.loadPatient(patientId);
-		const latest = await this.loadLatestVitaminDTestResult(patientId);
+		try {
+			const patient = await this.loadPatient(patientId);
+			const latest = await this.loadLatestVitaminDTestResult(patientId);
 
-		if (!latest) {
-			return {
-				patient,
-				testResult: null,
-				recommendation: null,
-				message: 'No Vitamin D test results found for this patient yet.',
-			};
-		}
+			if (!latest) {
+				return {
+					patient,
+					testResult: null,
+					recommendation: null,
+					message: 'No Vitamin D test results found for this patient yet.',
+				};
+			}
 
-		const weightKg = patient.weightKg ?? undefined;
-		const targetVitaminDNgMl = patient.targetVitaminDNgMl ?? 30;
+			const weightKg = patient.weightKg ?? undefined;
+			const targetVitaminDNgMl = patient.targetVitaminDNgMl ?? 30;
 
-		if (!weightKg) {
+			if (!weightKg) {
+				return {
+					patient,
+					testResult: latest,
+					recommendation: null,
+					message: 'Missing patient weight. Add weight to generate a personalized recommendation.',
+				};
+			}
+
+			const recommendation = await this.getOrCreateRecommendation({
+				patientId,
+				testResultId: latest.id,
+				weightKg,
+				currentVitaminDNgMl: this.parseCurrentVitaminDNgMl(latest),
+				targetVitaminDNgMl,
+			});
+
 			return {
 				patient,
 				testResult: latest,
-				recommendation: null,
-				message: 'Missing patient weight. Add weight to generate a personalized recommendation.',
+				recommendation,
 			};
+		} catch (err) {
+			const message = err instanceof Error ? err.message : String(err);
+			console.error('[VitaminD getLatest]', err);
+			throw new InternalServerErrorException({ message: 'Vitamin D latest failed', detail: message });
 		}
-
-		const recommendation = await this.getOrCreateRecommendation({
-			patientId,
-			testResultId: latest.id,
-			weightKg,
-			currentVitaminDNgMl: this.parseCurrentVitaminDNgMl(latest),
-			targetVitaminDNgMl,
-		});
-
-		return {
-			patient,
-			testResult: latest,
-			recommendation,
-		};
 	}
 
 	@Put('metrics')

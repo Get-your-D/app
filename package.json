@@ -7,6 +7,9 @@
   ],
   "scripts": {
     "dev": "concurrently \"npm run start:dev --workspace=packages/server\" \"npm run dev --workspace=packages/web\" \"npm run dev --workspace=packages/web-dashboard\" \"npm run dev --workspace=packages/web-patient\"",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:setup": "npm run db:up && npx wait-on tcp:localhost:5432 -t 30000 && npm -w packages/server run db:migrate && npm -w packages/server run db:seed",
     "prepare": "husky",
     "lint": "npm run lint --workspaces --if-present",
     "lint:check": "npm run lint:check --workspaces --if-present",
@@ -14,6 +17,7 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
+    "wait-on": "^8.0.1",
     "daisyui": "^5.5.19",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",

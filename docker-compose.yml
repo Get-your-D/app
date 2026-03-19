@@ -1,15 +1,18 @@
+# Postgres only — for local dev. Server and frontends run on host (npm run dev).
+# First time: npm run db:setup   Then: npm run dev
 services:
   db:
-    image: postgres:17-alpine
+    image: postgres:16-alpine
+    container_name: vitd-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - vitd-db-data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  vitd-db-data:

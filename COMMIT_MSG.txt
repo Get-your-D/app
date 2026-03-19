@@ -1,0 +1,33 @@
+feat(vitamin-d): Docker DB setup, fixed ports, API fixes, and clearer UI
+
+Docker & database
+- Add docker-compose.yml with Postgres only (vitd-db, port 5432, db app)
+- Add root scripts: db:up, db:down, db:setup (with wait-on for DB readiness)
+- Add server script db:migrate:seed (migrate then seed in one command)
+- Document simple setup in docs/docker-and-feature-setup.md
+
+Dev ports (no more wrong app on 3001)
+- web: dev on port 3000
+- web-patient: dev on port 3001 (Vitamin D feature)
+- web-dashboard: dev on port 3002
+
+API (fix 500 and CORS)
+- main.ts: load dotenv so DATABASE_URL from .env is used; enable CORS for 3000/3001/3002
+- vitamin-d.controller: use prisma.vitaminDRecommendation directly; wrap getLatest in try/catch and return InternalServerErrorException with detail; cast phases as object for create
+
+Patient app UI
+- Clearer intro (auto-calc from weight, current, target; recommendation alongside result)
+- "Your results" section with scroll-into-view after Load latest
+- "Based on your weight and levels" personalization block; actionable "Take daily" and "Your plan" wording
+- Parse 4xx/5xx response body and show server detail (e.g. Patient not found) in error message
+- Hint that API must run on port 3003
+
+Files changed:
+- docker-compose.yml (new/edit)
+- package.json (db scripts, wait-on)
+- package-lock.json
+- docs/docker-and-feature-setup.md
+- packages/server/Dockerfile, package.json, src/main.ts, src/vitamin-d/vitamin-d.controller.ts
+- packages/server/src/database/prisma/schema.prisma
+- packages/web/package.json, packages/web-dashboard/package.json, packages/web-patient/package.json
+- packages/web-patient/src/app/page.tsx
