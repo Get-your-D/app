@@ -16,7 +16,8 @@
     "baseUrl": "./",
     "paths": {
       "contracts": ["../contracts/src/index.ts"],
-      "contracts/*": ["../contracts/src/*"]
+      "contracts/*": ["../contracts/src/*"],
+      "shared/db/*": ["../shared/db/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

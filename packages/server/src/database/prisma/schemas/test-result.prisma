@@ -11,6 +11,8 @@ model TestResult {
     createdAt DateTime @default(now())
     testedById String?
     testedBy Clinic? @relation(fields: [testedById], references: [id])
+
+    deletedAt DateTime?
     
     patient Patient @relation(fields: [patientId], references: [id])
     consentRequests ConsentRequest[]
