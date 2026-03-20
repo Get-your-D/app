@@ -19,10 +19,11 @@ model ConsentRequest {
     expiresAt DateTime
     status ConsentRequestStatus
     type ConsentRequestType
-    
+
     patient Patient @relation(fields: [patientId], references: [id])
     clinic Clinic @relation(fields: [clinicId], references: [id])
     testResult TestResult? @relation(fields: [testResultId], references: [id])
+    consent Consent? @relation("RequestConsent")
 }
 
 model Consent {
@@ -30,11 +31,15 @@ model Consent {
     patientId String
     clinicId String
     testResultId String?
+    consentRequestId String @unique
+    resultStartAt DateTime?
+    resultEndAt DateTime?
     grantedAt DateTime @default(now())
     expiresAt DateTime?
     revokedAt DateTime?
-    
+
     patient Patient @relation(fields: [patientId], references: [id])
     clinic Clinic @relation(fields: [clinicId], references: [id])
     testResult TestResult? @relation(fields: [testResultId], references: [id])
+    consentRequest ConsentRequest @relation("RequestConsent", fields: [consentRequestId], references: [id])
 }
